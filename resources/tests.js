@@ -2,6 +2,44 @@ var numberOfItemsToAdd = 100;
 var Suites = [];
 
 Suites.push({
+    name: 'Likely.js',
+    url: 'todomvc/likelyjs/index.html',
+    version: '0.9.1',
+    prepare: function (runner, contentWindow, contentDocument) {
+        //contentWindow.likely.sync = function () {}
+        contentWindow.data.items = [];
+        return runner.waitForElement('#new-todo').then(function (element) {
+            element.focus();
+            return element;
+        });
+    },
+    tests: [
+        new BenchmarkTestStep('Adding' + numberOfItemsToAdd + 'Items', function (newTodo, contentWindow, contentDocument) {
+            var changeEvt = document.createEvent('Event');
+            changeEvt.initEvent('change', true, true);
+            var keydownEvent = document.createEvent('Event');
+            keydownEvent.initEvent('keydown', true, true);
+            keydownEvent.which = 13;
+            for (var i = 0; i < numberOfItemsToAdd; i++) {
+                newTodo.value = 'Something to do ' + i;
+                newTodo.dispatchEvent(changeEvt);
+                newTodo.dispatchEvent(keydownEvent);
+            }
+        }),
+        new BenchmarkTestStep('CompletingAllItems', function (newTodo, contentWindow, contentDocument) {
+            var checkboxes = contentDocument.querySelectorAll('.toggle');
+            for (var i = 0; i < checkboxes.length; i++)
+                checkboxes[i].click();
+        }),
+        new BenchmarkTestStep('DeletingAllItems', function (newTodo, contentWindow, contentDocument) {
+            var deleteButtons = contentDocument.querySelectorAll('.destroy');
+            for (var i = 0; i < deleteButtons.length; i++)
+                deleteButtons[i].click();
+        })
+    ]
+});
+
+Suites.push({
     name: 'Backbone',
     url: 'todomvc/backbone/index.html',
     version: '1.1.2',
@@ -259,3 +297,4 @@ Suites.push({
         })
     ]
 });
+
